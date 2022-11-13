@@ -3,3 +3,5 @@ A project that uses an SDS011 sensor and RaspberryPi to measure indoor air quali
 
 # Credit 
 The sds011.py file present in the Python directory was authored by Ivan Kalchev. View his module at https://github.com/ikalchev/py-sds011. This module was used to control the SDS011 sensor in this project. 
+
+Sending APNs requests was greatly simplified by the package: https://github.com/sideshow/apns2
