@@ -15,9 +15,9 @@ This file contains logic to encrypt a token before it is stored on the local fil
 and decrypt tokens read from a file. A key and nonce are defined in order to perform AES-GCM
 authenticated encryption.
 
-IMPORTANT: The key and nonce are written to files and stored on the local file system.
-Whenever possible, they should instead be stored in a more secure location, separate from
-the data they are used to encrypt and decrypt.
+IMPORTANT: The key is written to a local file.
+Whenever possible, it should be stored in a more secure location,
+separate from the data that it encrypts.
 */
 
 var key = make([]byte, 32)
