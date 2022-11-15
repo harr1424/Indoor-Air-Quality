@@ -4,7 +4,7 @@ A project that uses an SDS011 sensor and RaspberryPi to measure indoor air quali
 
 <p align="center">
       <img width="200" src="https://github.com/harr1424/Indoor-Air-Quality/blob/main/images/chart.png" alt="A chart displaying indoor air quality measurements">
-    <img width="200" src="[http://material-bread.org/logo-shadow.svg](https://github.com/harr1424/Indoor-Air-Quality/blob/main/images/alerts.png)" alt="Air quality alerts received on an iOS device">
+    <img width="200" src="http://material-bread.org/logo-shadow.svg](https://github.com/harr1424/Indoor-Air-Quality/blob/main/images/alerts.png)" alt="Air quality alerts received on an iOS device">
 </p>
 
 
