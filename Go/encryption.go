@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
-	"io"
 	"log"
 	"os"
 )
@@ -22,10 +21,16 @@ the data they are used to encrypt and decrypt.
 */
 
 var key = make([]byte, 32)
-var nonce = make([]byte, 12)
 
 func encryptToken(t token) string {
 	original := t.ID // ID is string member of token
+	var nonce = make([]byte, 12)
+
+	// read random bytes into nonce
+	_, err := rand.Read(nonce)
+	if err != nil {
+		log.Println("Error reading random bytes into nonce:", err)
+	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -39,14 +44,22 @@ func encryptToken(t token) string {
 
 	ciphertext := aesgcm.Seal(nil, nonce, []byte(original), nil)
 
-	return hex.EncodeToString(ciphertext)
+	// prepend the ciphertext with the nonce
+	out := append(nonce, ciphertext...)
+
+	return hex.EncodeToString(out)
 }
 
 func decryptToken(s string) string {
-	ciphertext, err := hex.DecodeString(s)
+	// read hex string describing nonce and ciphertext
+	enc, err := hex.DecodeString(s)
 	if err != nil {
 		log.Println("Error decoding string from hex:", err)
 	}
+
+	// separate ciphertext from nonce
+	nonce := enc[0:12]
+	ciphertext := enc[12:]
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -67,39 +80,24 @@ func decryptToken(s string) string {
 	return originalAsString
 }
 
-func handleCrypto(key *[]byte, nonce *[]byte) {
+func handleCrypto(key *[]byte) {
 	if _, err := os.Stat("key.key"); errors.Is(err, os.ErrNotExist) {
-		log.Println("No crypto files found. Creating key, nonce, and files...")
+		log.Println("Key file not found. Creating one...")
 		key_file, err := os.OpenFile("key.key", os.O_CREATE|os.O_WRONLY, 0600)
-		if err != nil {
-			log.Println("Error creating file:", err)
-		}
-		nonce_file, err := os.OpenFile("nonce.key", os.O_CREATE|os.O_WRONLY, 0600)
 		if err != nil {
 			log.Println("Error creating file:", err)
 		}
 
 		defer key_file.Close()
-		defer nonce_file.Close()
 
 		_, err = rand.Read(*key)
 		if err != nil {
 			log.Println("Error creating key:", err)
 		}
 
-		_, err = io.ReadFull(rand.Reader, *nonce)
-		if err != nil {
-			log.Println("Error creating nonce:", err)
-
-		}
-
 		_, err = key_file.Write(*key)
 		if err != nil {
 			log.Println("Error writing key to file:", err)
-		}
-		_, err = nonce_file.Write(*nonce)
-		if err != nil {
-			log.Println("Error writing nonce to file:", err)
 		}
 
 	} else {
@@ -109,22 +107,11 @@ func handleCrypto(key *[]byte, nonce *[]byte) {
 			log.Println("Error accessing key file:", err)
 		}
 
-		nonce_file, err := os.OpenFile("nonce.key", os.O_RDONLY, 0644)
-		if err != nil {
-			log.Println("Error accessing nonce file:", err)
-		}
-
 		defer key_file.Close()
-		defer nonce_file.Close()
 
 		_, err = key_file.Read(*key)
 		if err != nil {
 			log.Println("Error reading key from file:", err)
-		}
-
-		_, err = nonce_file.Read(*nonce)
-		if err != nil {
-			log.Println("Error reading nonce from file:", err)
 		}
 	}
 
