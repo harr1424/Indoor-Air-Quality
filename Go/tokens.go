@@ -88,7 +88,7 @@ Otherwise, the contents of the file are read to the tokens slice in memory.
 */
 func readTokensFromFile() {
 	if _, err := os.Stat("tokens.data"); errors.Is(err, os.ErrNotExist) {
-		log.Println("Token file does not exist... creating it")
+		log.Println("Token file not found... Creating one...")
 		file, err := os.Create("tokens.data")
 		if err != nil {
 			log.Println("Error creating token file:", err)

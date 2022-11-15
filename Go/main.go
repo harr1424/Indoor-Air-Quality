@@ -32,7 +32,7 @@ func limit(limited http.HandlerFunc) http.HandlerFunc {
 }
 
 func main() {
-	handleCrypto(&key, &nonce) // see encryption.go
+	handleCrypto(&key) // see encryption.go
 
 	readTokensFromFile()                           // see tokens.go
 	fmt.Println("All tokens (from file):", tokens) // Prints all currently registered tokens present in tokens.data
