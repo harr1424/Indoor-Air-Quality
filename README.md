@@ -1,8 +1,8 @@
 # Indoor-Air-Quality
 A project that uses an SDS011 sensor and RaspberryPi to measure indoor air quality.  Measurements are uploaded to Google Cloud Storage and visualized in an iOS app using Swift Charts. The RaspberryPi also contacts an API written in Go to contact Apple Push Notification Services (APNs) if a measurement exceeds World Health Organization guidelines for air quality.
 
-![An image showing indoor air quality measured over time](https://github.com/harr1424]/Indoor-Air-Quality/blob/main/images/chart.png?raw=true)
-![An image showing air quality alerts received on an iOS device](https://github.com/[harr1424]/Indoor-Air-Quality/blob/main/images/alerts.png?raw=true)
+![An image showing indoor air quality measured over time](https://github.com/harr1424/Indoor-Air-Quality/blob/main/images/chart.png?raw=true)
+![An image showing air quality alerts received on an iOS device](https://github.com/harr1424/Indoor-Air-Quality/blob/main/images/alerts.png?raw=true)
 
 
 # Credit 
