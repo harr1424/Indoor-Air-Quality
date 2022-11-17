@@ -19,9 +19,10 @@ Measurements for each time interval are collected on separate threads.
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
     """
     Called by perform_upload()
+    Uploads a local file to a specified bucket using a specified name. 
     @:param str bucket_name: Name of bucket to upload file to
     @:param str source_file_name: Name of local file to upload
-    @:param str destination_blob_name: Name of file once uploaded
+    @:param str destination_blob_name: Name of file as shown in cloud storage
     """
     storage_client = storage.Client(
         project=secrets.project_name
@@ -34,10 +35,12 @@ def upload_blob(bucket_name, source_file_name, destination_blob_name):
 
 def perform_upload(file_object, source_filename, measurement_type):
     """
-    Uploads a file to cloud storage
+    Closes a local file file object in preparation for uploading to 
+    cloud storage. Prints the measurement interval of this file upload 
+    to std::out and prepends the interval type to the filename. 
     @:param _io.TextIOWrapper file_object: The file object to close
     @:param str source_filename: The local file name of the file object
-    @:param str measurement_type: What type of measurement the file contains
+    @:param str measurement_type: What type of measurement the file contains (hourly, daily, weekly, or monthly)
     """
     file_object.close()
 
@@ -54,12 +57,24 @@ def curr_time():
     return time.asctime(time.localtime())
 
 
-def take_measurements(measurement_type, num_iterations):
+def take_measurements(measurement_type):
     """
-    Collects one measurement of air quality each minute.
-    @:param str measurement_type: What type of measurement the file contains
-    @:param int num_iterations: How many times to perform measurement before uploading
+    Opens a measurement file object and sets num_iterations to collect measurements to fill a corresponding time interval. 
+    Collects one measurement of air quality each minute, until num_iterations is reached. Then the file object, 
+    a CSV file describing measurements, will be uploaded to cloud storage. 
+    @:param str measurement_type: What type of measurement the file contains (hourly, daily, weekly, or monthly)
     """
+
+    if measurement_type == 'hourly':
+        num_iterations = 60
+    elif measurement_type == 'daily': 
+        num_iterations = 1440
+    elif measurement_type == 'weekly':
+        num_iterations = 10080
+    elif measurement_type == 'monthly':
+        num_iterations = 43800
+    else:
+        raise Exception(f"Invalid measurement_type provided: {measurement_type}. Must be hourly, daily, weekly, or monthly.")
 
     while True:
         curr_file_name = f"{curr_time()}.csv"
@@ -96,10 +111,11 @@ if __name__ == '__main__':
     time.sleep(15)
     print("Sensor is now running:")
 
-    threads = [Thread(target=take_measurements, args=['hourly', 60]),
-               Thread(target=take_measurements, args=['daily', 1440]),
-               Thread(target=take_measurements, args=['weekly', 10080]),
-               Thread(target=take_measurements, args=['monthly', 43800])]
+    # Threading is used to allow for hourly, daily, weekly, and monthly files to be written to and uploaded synchronously. 
+    threads = [Thread(target=take_measurements, args=['hourly']),
+               Thread(target=take_measurements, args=['daily']),
+               Thread(target=take_measurements, args=['weekly']),
+               Thread(target=take_measurements, args=['monthly'])]
 
     for thread in threads:
         thread.start()
