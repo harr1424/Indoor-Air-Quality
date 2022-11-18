@@ -13,7 +13,6 @@ import FirebaseStorage
 
 struct WeeklyList: View {
     @StateObject private var cloudStorage = CloudStorage()
-    @State public var chosenFile: String?
     @State var apiResponse: Response?
     @State var showAlert = false
     
