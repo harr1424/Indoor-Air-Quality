@@ -1,7 +1,7 @@
 /*
  Created by John Harrington October, 2022
  
- This file is responsible for retreiving all measurement files stored in Cloud Storage.
+ This file is responsible for retrieving all measurement files stored in Cloud Storage.
  
  Additionally, the name of hourly measurement files are modified to be more readable, and
  hourly measurements from past dates are not displayed and deleted from Cloud Storage.
@@ -30,7 +30,12 @@ public class CloudStorage: ObservableObject {
         df.dateFormat = "EEE MMM d HH:mm:ss y"
         df.timeZone = TimeZone(identifier: "MST")
         df.locale = Locale(identifier: "en_US_POSIX")
-        return df.date(from: dateAsString)!
+        
+        if let formattedDate = df.date(from: dateAsString) {
+            return formattedDate
+        } else {
+            fatalError("Could not format \(dateAsString)")
+        }
     }
     
     init() {
@@ -55,32 +60,27 @@ public class CloudStorage: ObservableObject {
                                 if let result = result {
                                     for item in result.items {
                                         /*
-                                         Format how hourly measurement files are displayed to the user as a
-                                         more readable date format: Nov 6. 2022 at 12:00 AM
+                                         Convert the StorageReference name to a date in order to compare it
+                                         to the current date:
                                          */
-                                        let fileName = item.name // Sun Nov 6 07:49:04 2022
-                                        let beginSubString = fileName.startIndex
+                                        let fileName = item.name
+                                        let beginSubString = fileName.index(fileName.startIndex, offsetBy: 0)
                                         let endSubString = fileName.index(fileName.endIndex, offsetBy: -4)
                                         let range = beginSubString..<endSubString
                                         let subString = fileName[range]
-                                        let stringDescribingDate = String(subString) // Nov 6. 2022 at 12:00 AM
+                                        let stringDescribingDate = String(subString)
+                                        let measurementDate = self.format_date(stringDescribingDate)
                                         
                                         /*
                                          Hourly measurements accumulate fast, compare the date of the measurement
                                          to the current date, and if they are not equal, delete the measurement.
-                                         
-                                         A user is still able to view prior dates measurements using the daily, weekly,
-                                         and monthly intervals.
-                                         
-                                         This eliminates a list of >24 measurement files.
                                          */
-                                        let measurementDate = self.format_date(stringDescribingDate)
                                         let currentDate = NSDate()
                                         
                                         let currentDay = Calendar.current.dateComponents([.day, .month, .year], from: currentDate as Date)
                                         let measurementDay = Calendar.current.dateComponents([.day, .month, .year], from: measurementDate)
                                         
-                                        if (measurementDay == currentDay) { // only show hourly measurements for the current day
+                                        if (measurementDay == currentDay) { // only append hourly measurements for the current day
                                             self.hourlyItems.append(item)
                                         }
                                         else { // delete the measurements from prior days
@@ -95,22 +95,92 @@ public class CloudStorage: ObservableObject {
                                 
                             case "daily":
                                 if let result = result {
+                                    
+                                    /*
+                                     Create a dictionary containing the date a measurement began as keys
+                                     and StorageReference object corresponding to that measurement as values.
+                                     */
+                                    var measurementDict = [Date : StorageReference]()
+                                    
                                     for item in result.items {
-                                        self.dailyItems.append(item)
+                                        let fileName = item.fullPath
+                                        let beginSubString = fileName.index(fileName.startIndex, offsetBy: 6)
+                                        let endSubString = fileName.index(fileName.endIndex, offsetBy: -4)
+                                        let range = beginSubString..<endSubString
+                                        let subString = fileName[range]
+                                        let stringDescribingDate = String(subString)
+                                        let measurementDate = self.format_date(stringDescribingDate)
+                                        
+                                        measurementDict[measurementDate] = item
+                                    }
+                                    
+                                    // Sort the dictionary ascending by key
+                                    let sortedMeasurements = measurementDict.sorted( by: { $0.key < $1.key})
+                                    
+                                    // Add the measurements to the published array in sorted order
+                                    for measurement in sortedMeasurements {
+                                        self.dailyItems.append(measurement.value)
                                     }
                                 }
                                 
                             case "weekly":
                                 if let result = result {
+                                    
+                                    /*
+                                     Create a dictionary containing the date a measurement began as keys
+                                     and StorageReference object corresponding to that measurement as values.
+                                     */
+                                    var measurementDict = [Date : StorageReference]()
+                                    
                                     for item in result.items {
-                                        self.weeklyItems.append(item)
+                                        let fileName = item.fullPath
+                                        let beginSubString = fileName.index(fileName.startIndex, offsetBy: 7)
+                                        let endSubString = fileName.index(fileName.endIndex, offsetBy: -4)
+                                        let range = beginSubString..<endSubString
+                                        let subString = fileName[range]
+                                        let stringDescribingDate = String(subString)
+                                        let measurementDate = self.format_date(stringDescribingDate)
+                                        
+                                        measurementDict[measurementDate] = item
+                                    }
+                                    
+                                    // Sort the dictionary ascending by key
+                                    let sortedMeasurements = measurementDict.sorted( by: { $0.key < $1.key})
+                                    
+                                    // Add the measurements to the published array in sorted order
+                                    for measurement in sortedMeasurements {
+                                        self.weeklyItems.append(measurement.value)
                                     }
                                 }
                                 
                             case "monthly":
                                 if let result = result {
+                                    
+                                    
+                                    /*
+                                     Create a dictionary containing the date a measurement began as keys
+                                     and StorageReference object corresponding to that measurement as values.
+                                     */
+                                    var measurementDict = [Date : StorageReference]()
+                                    
                                     for item in result.items {
-                                        self.monthlyItems.append(item)
+                                        let fileName = item.fullPath
+                                        let beginSubString = fileName.index(fileName.startIndex, offsetBy: 8)
+                                        let endSubString = fileName.index(fileName.endIndex, offsetBy: -4)
+                                        let range = beginSubString..<endSubString
+                                        let subString = fileName[range]
+                                        let stringDescribingDate = String(subString)
+                                        let measurementDate = self.format_date(stringDescribingDate)
+                                        
+                                        measurementDict[measurementDate] = item
+                                    }
+                                    
+                                    // Sort the dictionary ascending by key
+                                    let sortedMeasurements = measurementDict.sorted( by: { $0.key < $1.key})
+                                    
+                                    // Add the measurements to the published array in sorted order
+                                    for measurement in sortedMeasurements {
+                                        self.monthlyItems.append(measurement.value)
                                     }
                                 }
                                 
