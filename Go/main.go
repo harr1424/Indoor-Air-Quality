@@ -37,8 +37,9 @@ func main() {
 	readTokensFromFile()                           // see tokens.go
 	fmt.Println("All tokens (from file):", tokens) // Prints all currently registered tokens present in tokens.data
 
-	http.HandleFunc("/", createNewToken)
-	http.HandleFunc("/notify", limit(sendPushNotificationToAllTokens))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", createNewToken)
+	mux.HandleFunc("/notify", limit(sendPushNotificationToAllTokens))
 
 	log.Fatal(http.ListenAndServe("0.0.0.0:5050", nil))
 	//log.Fatal(http.ListenAndServeTLS(":5050", "localhost.crt", "localhost.key", nil)) // support TLS when available

@@ -39,6 +39,12 @@ func removeDuplicateTokens(tokenSlice []token) []token {
 // Called when the root endpoint is contacted
 // Expects to receive POST data describing an iOS device token
 func createNewToken(res http.ResponseWriter, req *http.Request) {
+	// ensure the function logic only executes if the root endpoint (/)
+	// was specified, and that this function isn't used as a catch-all
+	if req.URL.Path != "/" {
+		http.NotFound(res, req)
+		return
+	}
 
 	var newToken token
 
