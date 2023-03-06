@@ -8,6 +8,9 @@ A project that uses an SDS011 sensor and RaspberryPi to measure indoor air quali
        <spacer type="horizontal" width="200"></spacer>
     <img width="400" src="https://github.com/harr1424/Indoor-Air-Quality/blob/main/images/alerts.png" alt="Air quality alerts received on an iOS device">
     <img width="800" src="https://github.com/harr1424/Indoor-Air-Quality/blob/main/images/pi.png" alt="SDS011 sensor and Pi Traffic Light attached to a Raspberry Pi">
+    
+    ![69976284730__B51D1990-30C5-4CF4-A94F-BD9C23C1BBAC](https://user-images.githubusercontent.com/84741727/223009771-0c0ea712-d656-40a3-8e4c-ad687a2dae3c.png)
+
 
 </p>
 
