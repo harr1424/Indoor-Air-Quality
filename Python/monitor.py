@@ -1,3 +1,9 @@
+"""
+This file uses the sds011 module to control an SDS011 dust sensor for the purpose of measuring indoor air quality. 
+As measurements are taken, the logic contained in this file will adjust which light on the LED light strip is lit. 
+If a measurement exceeding WHO guidelines is taken, a push notification request will be sent to the APNs server. 
+"""
+
 import atexit
 import sys
 import time
@@ -9,12 +15,6 @@ from serial import SerialException
 
 import secrets
 from sds011 import *
-
-"""
-This file uses the sds011 module to control an SDS011 dust sensor for the purpose of measuring indoor air quality. 
-As measurements are taken, the logic contained in this file will adjust which light on the LED light strip is lit. 
-If a measurement exceeding WHO guidelines is taken, a push notification request will be sent to the APNs server. 
-"""
 
 # Setup GPIO pins
 GPIO.setmode(GPIO.BCM)
@@ -81,6 +81,9 @@ def take_measurements():
         Multiple threads attempting to access the sensor at the same may result in a race condition, 
         fortunately the Serial package avoids this but will throw an exception. Handle by waiting one second, 
         then re-attempting the measurement. 
+
+        Note that while this file does not use multiple threads, the code in this file will execute 
+        in tandem with other multi-threaded code. 
         """
         try:
             fine_particles, coarse_particles = sensor.query()
@@ -91,23 +94,23 @@ def take_measurements():
         update_lights(fine_particles, coarse_particles)
 
         # contact APNS server to send an alert immediately if a measurement exceeds WHO guidelines:
-        if fine_particles >= 5:
-            hour_minute = datetime.now().strftime("%I:%M %p")
-            pollutant = "PM2.5"
-            measurement = str(fine_particles)
+        # if fine_particles >= 5:
+        #     hour_minute = datetime.now().strftime("%I:%M %p")
+        #     pollutant = "PM2.5"
+        #     measurement = str(fine_particles)
 
-            r = requests.post(secrets.endpoint, json={"time": hour_minute, "pollutant": pollutant, "value": measurement})
+        #     r = requests.post(secrets.endpoint, json={"time": hour_minute, "pollutant": pollutant, "value": measurement})
 
-            print(f"{curr_time()}: Sent APN request with status code {r.status_code} returned")
+        #     print(f"{curr_time()}: Sent APN request with status code {r.status_code} returned")
 
-        if coarse_particles >= 15:
-            hour_minute = datetime.now().strftime("%I:%M %p")
-            pollutant = "PM10"
-            measurement = str(coarse_particles)
+        # if coarse_particles >= 15:
+        #     hour_minute = datetime.now().strftime("%I:%M %p")
+        #     pollutant = "PM10"
+        #     measurement = str(coarse_particles)
 
-            r = requests.post(secrets.endpoint, json={"time": hour_minute, "pollutant": pollutant, "value": measurement})
+        #     r = requests.post(secrets.endpoint, json={"time": hour_minute, "pollutant": pollutant, "value": measurement})
 
-            print(f"{curr_time()}: Sent APN request with status code {r.status_code} returned")
+        #     print(f"{curr_time()}: Sent APN request with status code {r.status_code} returned")
 
         time.sleep(10)
 
